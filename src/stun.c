@@ -155,6 +155,8 @@ void stun_parse_msg_buf(StunMessage *msg) {
         }
 
         break;
+      case STUN_ATTR_TYPE_ERROR_CODE:
+        LOGD("Error Code: %s", attr->value)
       case STUN_ATTR_TYPE_LIFETIME:
         break;
       case STUN_ATTR_TYPE_REALM:

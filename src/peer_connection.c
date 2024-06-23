@@ -338,8 +338,9 @@ static void peer_connection_state_new(PeerConnection *pc) {
   }
 
   pc->b_offer_created = 1;
-
+  LOGI("before onicecandidate");
   if (pc->onicecandidate) {
+    LOGI("onicecandidate");
     pc->onicecandidate(pc->local_sdp.content, pc->config.user_data);
   }
 }

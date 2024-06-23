@@ -15,7 +15,7 @@
 #include "esp_tls.h"
 #include "esp_ota_ops.h"
 #include "freertos/FreeRTOS.h"
-
+#include "utils.h"
 #include "peer.h"
 
 static const char *TAG = "webrtc";
@@ -41,7 +41,7 @@ int64_t get_timestamp() {
 
 static void oniceconnectionstatechange(PeerConnectionState state, void *user_data) {
 
-  ESP_LOGI(TAG, "PeerConnectionState: %d", state);
+  LOGI("PeerConnectionState: %d", state);
   eState = state;
   // not support datachannel close event
   if (eState != PEER_CONNECTION_COMPLETED) {
@@ -51,12 +51,12 @@ static void oniceconnectionstatechange(PeerConnectionState state, void *user_dat
 
 static void onmessasge(char *msg, size_t len, void *userdata) {
 
-  ESP_LOGI(TAG, "Datachannel message: %.*s, size", len, msg);
+  LOGI("Datachannel message: %.*s, size", len, msg);
 }
 
 void onopen(void *userdata) {
  
-  ESP_LOGI(TAG, "Datachannel opened");
+  LOGI("Datachannel opened");
   gDataChannelOpened = 1;
 }
 
@@ -66,7 +66,7 @@ static void onclose(void *userdata) {
 
 void peer_signaling_task(void *arg) {
 
-  ESP_LOGI(TAG, "peer_signaling_task started");
+  LOGI("peer_signaling_task started");
 
   for(;;) {
 
@@ -79,13 +79,13 @@ void peer_signaling_task(void *arg) {
 
 void peer_connection_task(void *arg) {
 
-  ESP_LOGI(TAG, "peer_connection_task started");
+  LOGI("peer_connection_task started");
 
   for(;;) {
 
     peer_connection_loop(g_pc);
 
-    vTaskDelay(pdMS_TO_TICKS(1));
+    vTaskDelay(pdMS_TO_TICKS(10));
   }
 }
 
@@ -101,9 +101,9 @@ void app_main(void) {
    .datachannel = DATA_CHANNEL_BINARY,
   };
 
-  ESP_LOGI(TAG, "[APP] Startup..");
-  ESP_LOGI(TAG, "[APP] Free memory: %d bytes", esp_get_free_heap_size());
-  ESP_LOGI(TAG, "[APP] IDF version: %s", esp_get_idf_version());
+  LOGI("[APP] Startup..");
+  LOGI("[APP] Free memory: %d bytes", esp_get_free_heap_size());
+  LOGI("[APP] IDF version: %s", esp_get_idf_version());
 
   esp_log_level_set("*", ESP_LOG_INFO);
   esp_log_level_set("esp-tls", ESP_LOG_VERBOSE);
@@ -120,7 +120,7 @@ void app_main(void) {
 
   if (esp_read_mac(mac, ESP_MAC_WIFI_STA) == ESP_OK) {
     sprintf(deviceid, "esp32-%02x%02x%02x%02x%02x%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-    ESP_LOGI(TAG, "Device ID: %s", deviceid);
+    LOGI("Device ID: %s", deviceid);
   }
 
   wifi_init_sta();
@@ -141,6 +141,6 @@ void app_main(void) {
 
   xTaskCreatePinnedToCore(peer_signaling_task, "peer_signaling", 8192, NULL, 10, &xPsTaskHandle, 0);
 
-  ESP_LOGI(TAG, "[APP] Free memory: %d bytes", esp_get_free_heap_size());
-  ESP_LOGI(TAG, "open https://sepfy.github.io/webrtc?deviceId=%s", deviceid);
+  LOGI("[APP] Free memory: %d bytes", esp_get_free_heap_size());
+  LOGI("open http://localhost/webrtc?deviceId=%s", deviceid);
 }

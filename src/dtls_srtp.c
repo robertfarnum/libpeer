@@ -3,7 +3,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
-
 #include "mbedtls/ssl.h"
 #include "dtls_srtp.h"
 #include "address.h"
@@ -76,11 +75,11 @@ static void dtls_srtp_x509_digest(const mbedtls_x509_crt *crt, char *buf) {
 }
 
 // Do not verify CA
-static int dtls_srtp_cert_verify(void *data, mbedtls_x509_crt *crt, int depth, uint32_t *flags) {
+// static int dtls_srtp_cert_verify(void *data, mbedtls_x509_crt *crt, int depth, uint32_t *flags) {
 
-  *flags &= ~(MBEDTLS_X509_BADCERT_NOT_TRUSTED | MBEDTLS_X509_BADCERT_CN_MISMATCH);
-  return 0;
-}
+//   *flags &= ~(MBEDTLS_X509_BADCERT_NOT_TRUSTED | MBEDTLS_X509_BADCERT_CN_MISMATCH);
+//   return 0;
+// }
 
 static int dtls_srtp_selfsign_cert(DtlsSrtp *dtls_srtp) {
 
@@ -120,7 +119,7 @@ static int dtls_srtp_selfsign_cert(DtlsSrtp *dtls_srtp) {
 
   mbedtls_mpi_fill_random(&serial, 16, mbedtls_ctr_drbg_random, &dtls_srtp->ctr_drbg);
 
-  mbedtls_x509write_crt_set_serial(&crt, &serial);
+  mbedtls_x509write_crt_set_serial_raw(&crt, (unsigned char *)&serial, sizeof(serial));
 
   mbedtls_x509write_crt_set_validity(&crt, "20180101000000", "20280101000000");
 
@@ -144,13 +143,13 @@ static int dtls_srtp_selfsign_cert(DtlsSrtp *dtls_srtp) {
 
 int dtls_srtp_init(DtlsSrtp *dtls_srtp, DtlsSrtpRole role, void *user_data) {
 
-  static const mbedtls_ssl_srtp_profile default_profiles[] = {
-   MBEDTLS_TLS_SRTP_AES128_CM_HMAC_SHA1_80,
-   MBEDTLS_TLS_SRTP_AES128_CM_HMAC_SHA1_32,
-   MBEDTLS_TLS_SRTP_NULL_HMAC_SHA1_80,
-   MBEDTLS_TLS_SRTP_NULL_HMAC_SHA1_32,
-   MBEDTLS_TLS_SRTP_UNSET
-  };
+//   static const mbedtls_ssl_srtp_profile default_profiles[] = {
+//    MBEDTLS_TLS_SRTP_AES128_CM_HMAC_SHA1_80,
+//    MBEDTLS_TLS_SRTP_AES128_CM_HMAC_SHA1_32,
+//    MBEDTLS_TLS_SRTP_NULL_HMAC_SHA1_80,
+//    MBEDTLS_TLS_SRTP_NULL_HMAC_SHA1_32,
+//    MBEDTLS_TLS_SRTP_UNSET
+//   };
 
   dtls_srtp->role = role;
   dtls_srtp->state = DTLS_SRTP_STATE_INIT;
@@ -194,7 +193,7 @@ int dtls_srtp_init(DtlsSrtp *dtls_srtp, DtlsSrtpRole role, void *user_data) {
 
     mbedtls_ssl_cookie_setup(&dtls_srtp->cookie_ctx, mbedtls_ctr_drbg_random, &dtls_srtp->ctr_drbg);
 
-    mbedtls_ssl_conf_dtls_cookies(&dtls_srtp->conf, mbedtls_ssl_cookie_write, mbedtls_ssl_cookie_check, &dtls_srtp->cookie_ctx);
+    // mbedtls_ssl_conf_dtls_cookies(&dtls_srtp->conf, mbedtls_ssl_cookie_write, mbedtls_ssl_cookie_check, &dtls_srtp->cookie_ctx);
 
   } else {
 
@@ -208,9 +207,9 @@ int dtls_srtp_init(DtlsSrtp *dtls_srtp, DtlsSrtpRole role, void *user_data) {
 
   LOGD("local fingerprint: %s", dtls_srtp->local_fingerprint);
 
-  mbedtls_ssl_conf_dtls_srtp_protection_profiles(&dtls_srtp->conf, default_profiles);
+  //mbedtls_ssl_conf_dtls_srtp_protection_profiles(&dtls_srtp->conf, default_profiles);
 
-  mbedtls_ssl_conf_srtp_mki_value_supported(&dtls_srtp->conf, MBEDTLS_SSL_DTLS_SRTP_MKI_UNSUPPORTED);
+  //mbedtls_ssl_conf_srtp_mki_value_supported(&dtls_srtp->conf, MBEDTLS_SSL_DTLS_SRTP_MKI_UNSUPPORTED);
 
   mbedtls_ssl_setup(&dtls_srtp->ssl, &dtls_srtp->conf);
 
@@ -360,11 +359,11 @@ static int dtls_srtp_handshake_server(DtlsSrtp *dtls_srtp) {
 
   while (1) {
 
-    unsigned char client_ip[] = "test";
+    //unsigned char client_ip[] = "test";
 
     mbedtls_ssl_session_reset(&dtls_srtp->ssl);
 
-    mbedtls_ssl_set_client_transport_id(&dtls_srtp->ssl, client_ip, sizeof(client_ip)); 
+    //mbedtls_ssl_set_client_transport_id(&dtls_srtp->ssl, client_ip, sizeof(client_ip)); 
 
     ret = dtls_srtp_do_handshake(dtls_srtp);
 
@@ -453,8 +452,8 @@ int dtls_srtp_handshake(DtlsSrtp *dtls_srtp, Address *addr) {
   }
 #endif
 
-  mbedtls_dtls_srtp_info dtls_srtp_negotiation_result;
-  mbedtls_ssl_get_dtls_srtp_negotiation_result(&dtls_srtp->ssl, &dtls_srtp_negotiation_result);
+//   mbedtls_dtls_srtp_info dtls_srtp_negotiation_result;
+//   mbedtls_ssl_get_dtls_srtp_negotiation_result(&dtls_srtp->ssl, &dtls_srtp_negotiation_result);
 
   return ret;
 }

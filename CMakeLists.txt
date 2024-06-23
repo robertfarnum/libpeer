@@ -4,7 +4,7 @@ project(peer)
 option(ENABLE_TESTS "Enable tests" OFF)
 
 include(third_party/coreHTTP/httpFilePaths.cmake)
-include(third_party/coreMQTT/mqttFilePaths.cmake)
+# include(third_party/coreMQTT/mqttFilePaths.cmake)
 
 include_directories(dist/include)
 
